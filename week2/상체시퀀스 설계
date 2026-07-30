@@ -1,0 +1,6 @@
+순서,명령어 (예제 기준 이름),대기(초/조건),기대 상태,실패 시 경로
+①,Damp,- (1.0초),힘 빠짐 (damp 모드 진입),- (예외 발생 시 finally 블록의 Damp()로 수렴)
+②,StandUp,"while client.GetMode() != ""balance_stand"" (조건 대기 + 1.0초 안정화)",기립 완료 (balance_stand 진입 확정),except / finally를 통한 Damp 복귀
+③,wave (오른팔 인사),while client.ActionActive() + 1.0초,모션 재생 완료 및 자세 안정화,except / finally를 통한 Damp 복귀
+④,hands_up (왼팔 인사) / bow (양손 인사),while client.ActionActive() + 1.0초,각 상체 모션 시퀀스 정상 수행,except / finally를 통한 Damp 복귀
+⑤,복귀 / Damp,1.0초 (finally 블록 실행),알려진 안전 상태 (damp 모드 및 에러 확인),- (최종 안전 수렴 단계)
