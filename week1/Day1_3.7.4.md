@@ -1,5 +1,5 @@
-#3.7.4
-sleep 600
+#Day1_3.7.4
+$sleep 600
 
-ps aux | grep sleep
-kill <PID>
+$ps aux | grep sleep
+$kill <PID>
