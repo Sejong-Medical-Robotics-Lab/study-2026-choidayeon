@@ -1,4 +1,5 @@
 #Dat1_3.7.2
+```
 $cd ~/robot_study/week1
 $mkdir data backup
 $touch data/exp_01.csv data/exp_02.csv data/exp_03.csv data/memo.txt
