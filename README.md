@@ -51,10 +51,13 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 
 - RM75 로봇팔에 EG2-4C2 그리퍼 모델을 결합, Gazebo 시뮬레이션 환경에서 구동 확인
 - MoveIt 워크플로우(목표 지정 → Plan → Execute) 실습: RViz 인터랙티브 마커로 목표 pose 지정 후 계획·실행
-- RealManRobot 공식 저장소에서 EG2-4C2 그리퍼 모델(mesh/urdf)을 가져와 팔과 결합한 Xacro 생성
-  - `arm_jaw_joint`로 팔 끝(`Link7`)과 그리퍼 베이스(`4C2_baselink`) 연결, 실측 보정값(z=-0.009, rpy z=-1.57) 적용
-  - 손끝 기준점 `grasp_tcp`(Link7 기준 z+0.12) 추가
-- RViz 표시용 launch 파일 작성 및 관절 슬라이더(joint1~7 + jaw_Joint1)로 그리퍼 개폐 확인
+- 팔+그리퍼 URDF/Xacro 결합을 스크립트 3단계로 직접 재현
+  1. `fetch_gripper_model.sh` — RealManRobot 공식 저장소(`URDF-to-XACRO`)에서 EG2-4C2 그리퍼 모델(mesh/urdf)을 가져옴
+  2. `build_arm_gripper_urdf.sh` — 팔(`rm_75.urdf.xacro`)과 그리퍼(`jaw.urdf.xacro`)를 `arm_jaw_joint`(고정 조인트)로 결합한 `arm_gripper.urdf.xacro` 생성
+     - `arm_jaw_joint`로 팔 끝(`Link7`)과 그리퍼 베이스(`4C2_baselink`) 연결, 실측 보정값(z=-0.009, rpy z=-1.57) 적용
+     - 손끝 기준점 `grasp_tcp`(Link7 기준 z+0.12) 추가
+  3. `display_rm75_jaw.sh` — robot_state_publisher + joint_state_publisher_gui + rviz2 launch 파일 생성/실행
+- `display_rm75_jaw_checklist.md` 기준으로 RViz 결합 결과 검증: 팔+그리퍼 표시, 관절 8개(joint1~7 + jaw_Joint1) 확인, `jaw_Joint1` 슬라이더로 그리퍼 개폐, TF에서 `grasp_tcp` 프레임 위치 확인
 
 ## 개발 환경
 
