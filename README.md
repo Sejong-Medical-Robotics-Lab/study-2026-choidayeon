@@ -32,7 +32,14 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 │   └── display_rm75_jaw_checklist.md   # RViz 표시 후 확인 포인트
 └── week4/               # Week 4 — Go2 사족보행 + Gazebo 실습
     ├── 학습일지/                       # 일자별 학습일지 (Gazebo Classic/신버전, arm64 패키지 이슈, URDF→SDF 변환 등)
-    └── Go2_Gazebo_Harmonic_이식.md     # URDF 정리·SDF 변환·월드 이식 코드 및 기립 자세 계산 기록
+    ├── go2-edu/                        # Go2 교육용 ROS2 패키지 (하위 저장소)
+    ├── Gazebo_설명.md                  # Gazebo 개념 정리 (구성요소, Classic vs 신버전, SDF, ROS2 연동)
+    ├── Go2_Gazebo_Harmonic_이식.md     # URDF 정리·SDF 변환·월드 이식 코드 및 기립 자세 계산 기록
+    ├── 구성요소.md                     # Go2 구성 요소 지도 그리기 (다리·관절·센서·관제 노드)
+    ├── turtlesim_vs_go2_비교.md        # Week1 turtlesim ↔ Go2 비교표
+    ├── 공식사양조사.md                 # Unitree 공식 사양 조사 + URDF 수치 대조
+    ├── 배터리확인경로.md               # 실기체/시뮬레이션 배터리 확인 경로 조사
+    └── go2_keyboard_teleop.py          # /cmd_vel 키보드 조종 스크립트
 ```
 
 ## Week 1 — ROS2 공통교육
@@ -89,6 +96,12 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
   - `gz sim`으로 실행, `gz service`로 엔티티 pose 조회 + 스크린샷으로 물리 시뮬레이션 위 로봇 렌더링 확인
   - 기존 `kinematics.py`의 `stand_pose()`로 기립 자세 목표 관절각(hip=0, thigh=0.79, calf=-1.58) 계산, `JointPositionController` 시스템 플러그인(ROS 불필요)으로 기립 작업 진행 중
 - 변환 스크립트·삽입 코드·기립 자세 관절각·다음 단계(`JointPositionController` 예시)까지 전 과정을 [`Go2_Gazebo_Harmonic_이식.md`](week4/Go2_Gazebo_Harmonic_이식.md)에 정리
+- Gazebo 개념 정리(`Gazebo_설명.md`): 물리 엔진(dartsim)·렌더링(OGRE2)·SDF World/Model 구조·server-gui 프로세스 분리, Classic ↔ 신버전 계보 차이를 오늘 실행 로그 기준으로 정리
+- Go2 구성 요소 지도(`구성요소.md`): 다리 4×관절 3(hip·thigh·calf, 12 DOF) + IMU + LiDAR + sport mode 관제 노드 + SportClient API 대응 정리
+- turtlesim ↔ Go2 비교(`turtlesim_vs_go2_비교.md`): 차원·물리엔진·형상표현·제어입력·자유도·센서·TF·다중개체 등 축별 비교표
+- Unitree 공식 사양 조사(`공식사양조사.md`): 공식 사이트 기준 모델별(AIR/PRO/X/EDU) 스펙 정리, 오늘 URDF에서 본 calf 관절 토크(45.43 N·m)가 공식 "최대 관절 토크 약 45 N·m"와 일치하는 것 대조 확인
+- 배터리 확인 경로 조사(`배터리확인경로.md`): 실기체는 `LowState_.bms_state.soc`(DDS `rt/lowstate`)로 확인 가능하지만, 시뮬레이션(`go2_sim`)의 `LowState.msg`엔 배터리 필드 자체가 없어 시뮬 범위 밖이라는 것을 코드로 직접 확인
+- 키보드 조종 스크립트(`go2_keyboard_teleop.py`): `go2_sim`이 구독하는 `/cmd_vel`에 Twist 발행, 0.5초 워치독(`core.py CMD_VEL_TIMEOUT`)에 맞춰 10Hz로 현재 속도 재발행하는 방식으로 직접 구현 (i/,/j/l 전후진·회전, J/L 게걸음, k 정지)
 
 ## 개발 환경
 
