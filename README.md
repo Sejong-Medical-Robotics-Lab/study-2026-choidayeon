@@ -31,7 +31,8 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 │   ├── display_rm75_jaw.sh             # RViz 표시용 launch 파일 생성/실행
 │   └── display_rm75_jaw_checklist.md   # RViz 표시 후 확인 포인트
 └── week4/               # Week 4 — Go2 사족보행 + Gazebo 실습
-    └── 학습일지/                       # 일자별 학습일지 (Gazebo Classic/신버전, arm64 패키지 이슈, URDF→SDF 변환 등)
+    ├── 학습일지/                       # 일자별 학습일지 (Gazebo Classic/신버전, arm64 패키지 이슈, URDF→SDF 변환 등)
+    └── Go2_Gazebo_Harmonic_이식.md     # URDF 정리·SDF 변환·월드 이식 코드 및 기립 자세 계산 기록
 ```
 
 ## Week 1 — ROS2 공통교육
@@ -87,6 +88,7 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
   - `gz sdf -p`로 URDF → SDF 변환 후 기존 `mission.world`(벽 4개·장애물 3개·waypoint 3개)에 이식
   - `gz sim`으로 실행, `gz service`로 엔티티 pose 조회 + 스크린샷으로 물리 시뮬레이션 위 로봇 렌더링 확인
   - 기존 `kinematics.py`의 `stand_pose()`로 기립 자세 목표 관절각(hip=0, thigh=0.79, calf=-1.58) 계산, `JointPositionController` 시스템 플러그인(ROS 불필요)으로 기립 작업 진행 중
+- 변환 스크립트·삽입 코드·기립 자세 관절각·다음 단계(`JointPositionController` 예시)까지 전 과정을 [`Go2_Gazebo_Harmonic_이식.md`](week4/Go2_Gazebo_Harmonic_이식.md)에 정리
 
 ## 개발 환경
 
