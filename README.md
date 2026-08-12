@@ -23,13 +23,15 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 │   ├── 5page_mission3.py, 5page_mission4.py
 │   ├── *.md               # 미션별 실습 정리 (지지영역, 상태전이, 상태전이판졀, 실패경로추적, 파라미터, 모니터링콜규약)
 │   └── 상체시퀀스 설계     # 상체 동작 시퀀스 설계 메모
-└── week3/               # Week 3 — RM75 로봇팔 + 그리퍼 실습
-    ├── 학습일지/                       # 일자별 학습일지
-    ├── rm75-edu/                       # RM75 교육용 ROS2 패키지 (하위 저장소)
-    ├── fetch_gripper_model.sh          # EG2-4C2 그리퍼 모델 파일 가져오기
-    ├── build_arm_gripper_urdf.sh       # 팔+그리퍼 결합 URDF/Xacro 생성
-    ├── display_rm75_jaw.sh             # RViz 표시용 launch 파일 생성/실행
-    └── display_rm75_jaw_checklist.md   # RViz 표시 후 확인 포인트
+├── week3/               # Week 3 — RM75 로봇팔 + 그리퍼 실습
+│   ├── 학습일지/                       # 일자별 학습일지
+│   ├── rm75-edu/                       # RM75 교육용 ROS2 패키지 (하위 저장소)
+│   ├── fetch_gripper_model.sh          # EG2-4C2 그리퍼 모델 파일 가져오기
+│   ├── build_arm_gripper_urdf.sh       # 팔+그리퍼 결합 URDF/Xacro 생성
+│   ├── display_rm75_jaw.sh             # RViz 표시용 launch 파일 생성/실행
+│   └── display_rm75_jaw_checklist.md   # RViz 표시 후 확인 포인트
+└── week4/               # Week 4 — Go2 사족보행 + Gazebo 실습
+    └── 학습일지/                       # 일자별 학습일지 (Gazebo Classic/신버전, arm64 패키지 이슈, URDF→SDF 변환 등)
 ```
 
 ## Week 1 — ROS2 공통교육
@@ -73,6 +75,18 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 - 나만의 파지 시퀀스 설계(`나만의시퀀스설계.md`): 홈 → P 위 접근 → P로 하강 → 복귀 4단계로 목표 지정 방법·성공 확인·실패 시 대응을 미리 설계
 - effort 필드 관찰 도전 미션(`effort필드관찰.md`): demo 모드의 effort 값(0/미채움) 확인, 실기체에서는 관절 토크 추정치가 다르게 나타날 것이라는 예측 정리
 - 실기체 체험 기록(`실습기록.md`): 위치 제어 상태에서 밀어보기(충돌 보호 작동 확인), 직접 교시(부드럽게 따라오고 손 놓으면 그 자리 유지), 교시 자세 재생까지 실물 로봇으로 체험
+
+## Week 4 — Go2 사족보행 + Gazebo 실습
+
+- Gazebo Classic(`gazebo`, `gzserver`/`gzclient`)과 신버전 Gazebo(Ignition → Fortress/Garden/Harmonic, `gz sim`) 두 계보가 명령어·플러그인 이름(`libgazebo_ros_*.so` vs `gz-sim-*-system`)·설정 방식에서 전혀 다르다는 것을 확인
+- 현재 실습 환경(Ubuntu 22.04 **arm64**)에서 Gazebo Classic 바이너리 자체가 Ubuntu 공식 저장소·OSRF 공식 저장소 어디에도 없는 것을 `apt-cache policy`/`apt-cache madison`으로 진단
+- 대체재인 Ignition Fortress도 ROS 2 arm64 저장소 자체의 의존성 결함(`libignition-gazebo6`가 요구하는 `libignition-sensors6 >= 6.8.1`이 arm64엔 6.8.0까지만 존재)으로 설치 불가 확인 — 로컬 설정이 아니라 저장소(빌드팜) 쪽 문제라는 것을 원인까지 추적
+- snap으로 신버전 Gazebo(Harmonic, 8.9.0) 설치
+- ROS 브릿지 없이 우회하는 경로로 Go2 로봇을 신버전 Gazebo에 직접 이식
+  - `go2-edu`(Gazebo Classic 전용) 저장소의 URDF에서 Classic 전용 플러그인(`planar_move`, `joint_state_publisher`, `joint_pose_trajectory`, imu/lidar 퍼블리셔) 제거, mesh 경로(`package://` → 절대경로) 수정
+  - `gz sdf -p`로 URDF → SDF 변환 후 기존 `mission.world`(벽 4개·장애물 3개·waypoint 3개)에 이식
+  - `gz sim`으로 실행, `gz service`로 엔티티 pose 조회 + 스크린샷으로 물리 시뮬레이션 위 로봇 렌더링 확인
+  - 기존 `kinematics.py`의 `stand_pose()`로 기립 자세 목표 관절각(hip=0, thigh=0.79, calf=-1.58) 계산, `JointPositionController` 시스템 플러그인(ROS 불필요)으로 기립 작업 진행 중
 
 ## 개발 환경
 
