@@ -39,7 +39,9 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
     ├── turtlesim_vs_go2_비교.md        # Week1 turtlesim ↔ Go2 비교표
     ├── 공식사양조사.md                 # Unitree 공식 사양 조사 + URDF 수치 대조
     ├── 배터리확인경로.md               # 실기체/시뮬레이션 배터리 확인 경로 조사
-    └── go2_keyboard_teleop.py          # /cmd_vel 키보드 조종 스크립트
+    ├── go2_keyboard_teleop.py          # /cmd_vel 키보드 조종 스크립트
+    ├── 키보드조작.md                   # 실기체 키보드 조작 아키텍처(teleop→/cmd_vel→go2_nav_bridge→Sport API)
+    └── 키보드조작실행.md               # 실기체 teleop_twist_keyboard 실행 절차 + 안전수칙
 ```
 
 ## Week 1 — ROS2 공통교육
@@ -102,6 +104,10 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 - Unitree 공식 사양 조사(`공식사양조사.md`): 공식 사이트 기준 모델별(AIR/PRO/X/EDU) 스펙 정리, 오늘 URDF에서 본 calf 관절 토크(45.43 N·m)가 공식 "최대 관절 토크 약 45 N·m"와 일치하는 것 대조 확인
 - 배터리 확인 경로 조사(`배터리확인경로.md`): 실기체는 `LowState_.bms_state.soc`(DDS `rt/lowstate`)로 확인 가능하지만, 시뮬레이션(`go2_sim`)의 `LowState.msg`엔 배터리 필드 자체가 없어 시뮬 범위 밖이라는 것을 코드로 직접 확인
 - 키보드 조종 스크립트(`go2_keyboard_teleop.py`): `go2_sim`이 구독하는 `/cmd_vel`에 Twist 발행, 0.5초 워치독(`core.py CMD_VEL_TIMEOUT`)에 맞춰 10Hz로 현재 속도 재발행하는 방식으로 직접 구현 (i/,/j/l 전후진·회전, J/L 게걸음, k 정지)
+- 실기체 Go2 키보드 조작 실습(`키보드조작.md`, `키보드조작실행.md`): 시뮬(`planar_move` 플러그인 직접 구동)과 달리 실기체는 `teleop_twist_keyboard → /cmd_vel → go2_nav_bridge → Unitree Sport API(Move()) → Go2` 순으로 브리지 노드가 한 번 더 변환해 전달한다는 것을 확인
+  - 터미널 1에서 `go2_nav_bridge`(Sport API 브리지) 실행 유지, 터미널 2에서 `teleop_twist_keyboard --ros-args -p speed:=0.5 -p turn:=1.0` 실행
+  - 실제 Go2로 전진/후진/좌우 이동/회전/정지(`k`)까지 직접 조작해 확인, `go2_nav_bridge.cpp`에서 `/cmd_vel` 구독 → `Move()` 호출로 이어지는 코드 흐름 확인
+  - 실기체는 Gazebo Reset World 같은 되돌리기가 없다는 점 때문에 `k`/리모컨 비상정지를 실행 전에 미리 확보해두는 안전 수칙 숙지
 
 ## 개발 환경
 
