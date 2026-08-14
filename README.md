@@ -41,7 +41,12 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
     ├── 배터리확인경로.md               # 실기체/시뮬레이션 배터리 확인 경로 조사
     ├── go2_keyboard_teleop.py          # /cmd_vel 키보드 조종 스크립트
     ├── 키보드조작.md                   # 실기체 키보드 조작 아키텍처(teleop→/cmd_vel→go2_nav_bridge→Sport API)
-    └── 키보드조작실행.md               # 실기체 teleop_twist_keyboard 실행 절차 + 안전수칙
+    ├── 키보드조작실행.md               # 실기체 teleop_twist_keyboard 실행 절차 + 안전수칙
+    ├── student_sport_demo.cpp          # Sport API 직접 호출 노드 (StandUp/StandDown/StopMove 메뉴)
+    ├── 코드구조확인.md                 # student_sport_demo.cpp의 SportClient·명령 구조 정리
+    ├── student_waypoint_sport.cpp      # Sport API Move()로 직접 구현한 Waypoint 순회(전진·좌회전·전진·우회전·전진)
+    ├── student_lidar_stop.py           # /lidar_points 기반 장애물 감지 정지·재출발(히스테리시스) 노드
+    └── 실행전확인.md                   # 실기체 실행 전 코드 이해도 자가 점검 체크리스트(LiDAR stop)
 ```
 
 ## Week 1 — ROS2 공통교육
@@ -108,6 +113,9 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
   - 터미널 1에서 `go2_nav_bridge`(Sport API 브리지) 실행 유지, 터미널 2에서 `teleop_twist_keyboard --ros-args -p speed:=0.5 -p turn:=1.0` 실행
   - 실제 Go2로 전진/후진/좌우 이동/회전/정지(`k`)까지 직접 조작해 확인, `go2_nav_bridge.cpp`에서 `/cmd_vel` 구독 → `Move()` 호출로 이어지는 코드 흐름 확인
   - 실기체는 Gazebo Reset World 같은 되돌리기가 없다는 점 때문에 `k`/리모컨 비상정지를 실행 전에 미리 확보해두는 안전 수칙 숙지
+- Sport API 직접 호출 실습(`student_sport_demo.cpp`, `코드구조확인.md`): `/cmd_vel` 브리지 없이 `SportClient`로 `StandUp()`/`StandDown()`/`StopMove()`를 직접 호출하는 C++ 노드를 작성 — 메뉴(1/2/q) 입력에 따라 실제 Go2가 기립/자세 낮추기/정지하는 것까지 확인, `CMakeLists.txt`에 실행 파일 등록 후 `colcon build`로 빌드
+- Sport API 기반 Waypoint 주행(`student_waypoint_sport.cpp`): `/cmd_vel` 없이 `sport_client_.Move(vx, vy, vyaw)`를 0.1초 간격으로 직접 재호출하는 `move_for()` 함수로 전진→좌회전→전진→우회전→전진 시퀀스 구현 — 시작 전 Enter 입력으로 대기하는 확인 절차, 각 구간 종료 시 `StopMove()` 명시 호출
+- LiDAR 장애물 정지(`student_lidar_stop.py`, `실행전확인.md`): `/lidar_points`(PointCloud2)를 구독해 전방 영역(x: 0.2~3.0 m, |y|<0.4 m)의 점만 골라 최소 거리 계산 → 0.6 m 미만이면 정지, 0.8 m 초과면 재출발(히스테리시스)하도록 `/cmd_vel`을 통해 `go2_nav_bridge`로 전달 — 코드만 보고 구독 토픽·마스크 조건·정지/재출발 거리 차이 이유를 먼저 자가 점검한 뒤 실기체에 실행
 
 ## 개발 환경
 
