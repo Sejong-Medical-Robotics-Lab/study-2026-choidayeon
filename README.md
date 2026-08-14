@@ -33,6 +33,7 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 └── week4/               # Week 4 — Go2 사족보행 + Gazebo 실습
     ├── 학습일지/                       # 일자별 학습일지 (Gazebo Classic/신버전, arm64 패키지 이슈, URDF→SDF 변환 등)
     ├── go2-edu/                        # Go2 교육용 ROS2 패키지 (하위 저장소)
+    ├── unitree_ros2/                   # Unitree 공식 ROS2 지원 패키지 (하위 저장소, cyclonedds_ws + example)
     ├── Gazebo_설명.md                  # Gazebo 개념 정리 (구성요소, Classic vs 신버전, SDF, ROS2 연동)
     ├── Go2_Gazebo_Harmonic_이식.md     # URDF 정리·SDF 변환·월드 이식 코드 및 기립 자세 계산 기록
     ├── 구성요소.md                     # Go2 구성 요소 지도 그리기 (다리·관절·센서·관제 노드)
@@ -116,6 +117,10 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 - Sport API 직접 호출 실습(`student_sport_demo.cpp`, `코드구조확인.md`): `/cmd_vel` 브리지 없이 `SportClient`로 `StandUp()`/`StandDown()`/`StopMove()`를 직접 호출하는 C++ 노드를 작성 — 메뉴(1/2/q) 입력에 따라 실제 Go2가 기립/자세 낮추기/정지하는 것까지 확인, `CMakeLists.txt`에 실행 파일 등록 후 `colcon build`로 빌드
 - Sport API 기반 Waypoint 주행(`student_waypoint_sport.cpp`): `/cmd_vel` 없이 `sport_client_.Move(vx, vy, vyaw)`를 0.1초 간격으로 직접 재호출하는 `move_for()` 함수로 전진→좌회전→전진→우회전→전진 시퀀스 구현 — 시작 전 Enter 입력으로 대기하는 확인 절차, 각 구간 종료 시 `StopMove()` 명시 호출
 - LiDAR 장애물 정지(`student_lidar_stop.py`, `실행전확인.md`): `/lidar_points`(PointCloud2)를 구독해 전방 영역(x: 0.2~3.0 m, |y|<0.4 m)의 점만 골라 최소 거리 계산 → 0.6 m 미만이면 정지, 0.8 m 초과면 재출발(히스테리시스)하도록 `/cmd_vel`을 통해 `go2_nav_bridge`로 전달 — 코드만 보고 구독 토픽·마스크 조건·정지/재출발 거리 차이 이유를 먼저 자가 점검한 뒤 실기체에 실행
+- Unitree 공식 ROS2 지원 패키지(`unitree_ros2/`) 직접 클론·빌드: `unitreerobotics/unitree_ros2` 클론 후 `ros-humble-rmw-cyclonedds-cpp`·`ros-humble-rosidl-generator-dds-idl` 설치, `cyclonedds_ws`(unitree_api/go/hg 메시지) + `example`(go2_sport_client 등) 빌드까지 성공
+  - 저장소 기본 `setup*.sh`가 ROS2 foxy·`$HOME/unitree_ros2` 경로를 하드코딩하고 있는 걸 확인하고, 이 환경(Humble + 저장소 내부 경로)에 맞게 세 스크립트를 직접 수정
+  - 실제 로봇이 물리적으로 연결되어 있지 않아 `setup_local.sh`(루프백 `lo`)로 소싱·빌드까지만 확인, `/sportmodestate` 등 실데이터 수신은 미확인
+  - 수업 때 쓴 `my_go2_nav`/`go2_practice`(브리지·waypoint·LiDAR stop 패키지)는 멘토가 이 공식 저장소 위에 별도로 얹은 패키지라 이번 클론엔 포함되지 않았다는 것도 확인
 
 ## 개발 환경
 
