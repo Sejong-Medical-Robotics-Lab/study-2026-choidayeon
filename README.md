@@ -9,13 +9,19 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 .
 ├── env_report.md      # 개발 환경 리포트 (OS, 커널, Python 버전 등)
 ├── week1/              # Week 1 — ROS2 공통교육
-│   ├── 학습일지/        # 일자별 학습일지 (Linux/Git, ROS2 구조, rviz2 등)
+│   ├── 학습일지/        # 일자별 학습일지 (Linux/Git, ROS2 구조, rviz2, 시연회 관람 기록 등)
 │   ├── logs/            # 실습 로그
-│   ├── data/, backup/   # 실습용 데이터 및 백업
-│   ├── 3.7도전미션/      # 도전 미션 산출물 (data/logs/results)
-│   ├── demo.launch.py   # turtlesim talker/listener 예제 launch 파일
+│   ├── data/, backup/   # 실습용 데이터 및 백업 (Day1_3.7.2 파일 조작 실습 산출물)
+│   ├── 3.7도전미션/      # 도전 미션용 폴더 구조(data/logs/results) — 현재 빈 폴더
+│   ├── demo.launch.py   # turtlesim_node + turtle_teleop_key 동시 실행 launch 파일
 │   ├── my_first_bag/    # 첫 rosbag 기록
-│   └── Day1_*.md        # 일차별 실습 정리
+│   ├── new_exp.sh       # 실험 폴더(data/logs/results) 일괄 생성 스크립트
+│   ├── sysinfo.sh       # OS·커널·CPU·메모리·Python 버전 → env_report.md 생성
+│   ├── robot.log        # 3.7.3 로그 grep/tail 실습 산출물
+│   ├── Day1_3.7.*.md    # Linux 터미널 기초(폴더/파일 조작, 로그 검색, 프로세스 kill, alias)
+│   ├── Day1_4.7.*.md    # Git 기초(add/commit/push, restore, 브랜치·merge·충돌 해결)
+│   ├── Day1_5.12_challenge.md  # ROS2 환경 점검 도전 미션
+│   └── Day2_5.12.*.md   # ROS_DOMAIN_ID 격리·turtlesim teleop 실습
 ├── week2/               # Week 2 — Unitree G1 휴머노이드 실습
 │   ├── 학습일지/          # 일자별 학습일지 (균형 제어, 안전 수칙 등)
 │   ├── g1-edu/            # G1 교육용 시뮬레이션(MuJoCo) 및 제어 코드 (하위 저장소)
@@ -65,13 +71,28 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 
 ## Week 1 — ROS2 공통교육
 
-- Linux 터미널, Git/GitHub 기본 사용법 학습
-- ROS2 노드/토픽 구조 이해, talker-listener 통신 실습
-- turtlesim을 활용한 다중 노드 제어(추적 로봇) 실습
-- rviz2를 통한 3D 공간 데이터 시각화
-- Go2 / G1 / FR3 플랫폼 시연회 관람 및 관찰 기록
-- Git 브랜치·병합·충돌 해결 실습(`Day1_4.7.2~5`): `git switch -c`로 실험 브랜치 생성 → 파라미터 값 변경·커밋 → `merge` 시 충돌 발생·수동 해결까지 직접 재현
-- ROS2 네트워크 격리 실습(`Day2_5.12.1~3`): `ROS_DOMAIN_ID`를 다르게 주면 같은 컴퓨터 안에서도 talker/listener가 서로 안 보이는 것을 확인하고, 도메인을 맞춰 통신 복구 + `turtle_teleop_key`로 키 입력이 토픽으로 발행되는 것 확인
+- **Linux 터미널 기초(`Day1_3.7.1~5`)**
+  - `3.7.1`: `mkdir -p`로 작업 폴더 생성 → `echo`로 `hello.txt` 작성 → `cat`/`ls -al`로 확인
+  - `3.7.2`: `data`/`backup` 폴더 생성 후 `touch`로 `exp_01~03.csv`·`memo.txt` 생성, `cp`로 백업, `mv`로 파일명 변경(`memo.txt`→`note.txt`), `rm`으로 삭제까지 파일 조작 한 세트
+  - `3.7.3`: `robot.log`에 `for` 반복문으로 100줄 로그를 만들고 중간에 `ERROR`/`WARN` 줄을 끼워넣은 뒤, `tail`/`grep`/`grep -n`으로 특정 로그 줄을 찾아내는 디버깅 실습
+  - `3.7.4`: `sleep 600`을 백그라운드로 띄운 뒤 `ps aux | grep`으로 PID를 찾아 `kill`로 프로세스 직접 종료
+  - `3.7.5`: `~/.bashrc`에 `alias week1=...` 추가 → `source`로 즉시 적용 → 다른 디렉터리(`/tmp`)에서도 별칭으로 바로 이동되는 것 확인
+  - 실습 산출물: `hello.txt`, `data/`·`backup/`의 csv, `robot.log`, `new_exp.sh`(실험 폴더를 `data/logs/results` 구조로 일괄 생성), `sysinfo.sh`(OS·커널·CPU·메모리·Python 버전을 `env_report.md`로 정리)
+- **Git/GitHub 기초 + 브랜치·충돌 실습(`Day1_4.7.1~5`)**
+  - `4.7.1`: `git config`로 사용자 등록, 저장소 클론, 첫 `README.md` 작성 → `add`→`commit`→`push`
+  - `4.7.2`: README 수정 후 `git status`/`git diff`로 변경 내역을 먼저 확인하고 커밋하는 습관 실습
+  - `4.7.3`: 실수로 파일을 덮어썼을 때 `git restore`로 되돌리기, `git show <해시>:파일`로 과거 시점 내용만 조회하기
+  - `4.7.4`~`4.7.5`: `git switch -c`로 실험 브랜치(`exp-tuning`, `exp-a`) 생성 → `params.yaml` 값 변경·커밋 → `main`으로 돌아와 다른 값으로 커밋 → `merge` 시 충돌 발생 → 파일 직접 열어 정리 → 재커밋까지 전 과정을 두 번(비충돌 브랜치 전환 관찰 → 실제 충돌 해결) 반복 재현
+- ROS2 노드/토픽 구조 이해, talker-listener 통신 실습 — talker를 끄고 터미널에서 직접 메시지를 보내 listener 응답을 확인해보는 것까지 진행(`학습일지 2026-07-24`)
+- turtlesim을 활용한 다중 노드 제어(추적 로봇) 실습: 거북이 2마리 이상을 띄워 한 마리가 다른 한 마리를 쫓아가도록 구현
+- `demo.launch.py`: `turtlesim_node` + `turtle_teleop_key`(별도 `xterm` 창)를 하나의 launch 파일로 동시 실행 — 노드 여러 개를 매번 따로 켜지 않고 한 번에 띄우는 것을 처음 구성
+- `my_first_bag/`: 첫 rosbag 기록 실습 산출물(`metadata.yaml` + `.db3`)
+- rviz2를 통한 3D 공간 데이터 시각화 (아직 완전히 이해하지 못했다고 스스로 평가 — `학습일지 2026-07-24`)
+- ROS2 환경 점검 도전 미션(`Day1_5.12_challenge.md`): `ROS_DISTRO`/`ROS_DOMAIN_ID`/`ros2` 명령 경로/설치 패키지 수를 스크립트 한 번으로 점검하고, `ros2 doctor --report`에서 NETWORK 섹션만 뽑아보는 것까지 진행 — 실행 결과(패키지 274개, 루프백만 잡히는 네트워크 등)를 그대로 로그에 남김
+- ROS2 네트워크 격리 실습(`Day2_5.12.1~2`): `ROS_DOMAIN_ID`를 다르게 주면 같은 컴퓨터 안에서도 talker/listener가 서로 안 보이는 것을 확인하고, 도메인을 맞추면 통신이 복구된다는 것 확인
+- turtlesim 키보드 조종 실습(`Day2_5.12.3`): `turtle_teleop_key`의 방향키 입력이 터미널 2에서 토픽으로 발행되어 터미널 1의 거북이가 움직이는 것 확인
+- Go2 / G1 / FR3 플랫폼 시연회 관람 및 관찰 기록(`학습일지 2026-07-24`): Go2(작지만 의외로 무겁다는 점)·G1(움직일 때 나는 소리로 체감한 무게 대비 부드러운 동작)·FR3(카메라로 물체 균형점을 찾아 그리퍼로 잡는 모습)를 각각 관찰하고, "휴머노이드 관절 상태도 토픽으로 주기적으로 발행되겠다"는 식으로 배운 개념과 연결해 기록
+- `3.7도전미션/`(`data`/`logs`/`results` 하위 폴더): 도전 미션용으로 만들어둔 산출물 폴더 — 현재는 빈 폴더 상태로, 내용물은 아직 채우지 않음
 
 ## Week 2 — G1 휴머노이드 실습
 
