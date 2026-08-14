@@ -29,7 +29,14 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 │   ├── fetch_gripper_model.sh          # EG2-4C2 그리퍼 모델 파일 가져오기
 │   ├── build_arm_gripper_urdf.sh       # 팔+그리퍼 결합 URDF/Xacro 생성
 │   ├── display_rm75_jaw.sh             # RViz 표시용 launch 파일 생성/실행
-│   └── display_rm75_jaw_checklist.md   # RViz 표시 후 확인 포인트
+│   ├── display_rm75_jaw_checklist.md   # RViz 표시 후 확인 포인트
+│   ├── 그리퍼명령.md                    # 그리퍼 위치/힘 제어 토픽 명령 정리
+│   ├── pick_place.py                   # MoveIt 액션 직접 호출 픽앤플레이스(고정 좌표)
+│   ├── grasp_test.py                   # CLI 파라미터 기반 픽앤플레이스 검증 하네스
+│   ├── vision_to_base_test.py          # 비전(YOLO+깊이) → base_link 좌표 변환 검증
+│   ├── vision_approach_test.py         # 비전 좌표로 물체 앞까지 접근(파지 제외)
+│   ├── vision_grasp_test.py            # 비전 기반 파지 확장용(현재 approach와 동일)
+│   └── frames_2026-08-05_13.32.54.pdf  # 당시 TF 트리 스냅샷
 └── week4/               # Week 4 — Go2 사족보행 + Gazebo 실습
     ├── 학습일지/                       # 일자별 학습일지 (Gazebo Classic/신버전, arm64 패키지 이슈, URDF→SDF 변환 등)
     ├── go2-edu/                        # Go2 교육용 ROS2 패키지 (하위 저장소)
@@ -79,17 +86,25 @@ ROS2 기초부터 Unitree G1 휴머노이드 제어까지의 실습 내용과 �
 - RM75 구성 요소 지도 그리기(`구성요소.md`): 관절 7개(J1~J7) + 일체형 관절 모듈 + 내장 컨트롤러 + 그리퍼 + 비상정지 버튼 + 제어 소프트웨어를 어깨(J1~J3)-팔꿈치(J4)-손목(J5~J7) 대응으로 정리
 - 여유자유도(7DOF) 체감 실험(`여자유도.md`): 손끝 위치·자세를 고정한 채 팔꿈치만 움직여보며 남는 자유도 확인, 팔을 뻗을수록 손목 회전 여유가 줄어드는 것을 직접 관찰
 - RM75 로봇팔에 EG2-4C2 그리퍼 모델을 결합, Gazebo 시뮬레이션 환경에서 구동 확인
-- MoveIt 워크플로우(목표 지정 → Plan → Execute) 실습: RViz 인터랙티브 마커로 목표 pose 지정 후 계획·실행
+- MoveIt 워크플로우(목표 지정 → Plan → Execute) 실습: 목표 지정(Set Goal)·경로 계획(Plan)·실행(Execute)이 분리된 3단계이고, Plan 단계에서 충돌 검사·IK 계산이 먼저 끝나야 Execute가 가능하다는 것을 확인 — RViz 인터랙티브 마커로 목표 pose를 손으로 끌어 지정 → Plan으로 초록색 trajectory 확인(충돌 없이 도달 가능할 때까지 목표를 조금씩 조정) → Execute로 Gazebo 상 팔+그리퍼가 실제로 움직이는 것까지 확인
 - 팔+그리퍼 URDF/Xacro 결합을 스크립트 3단계로 직접 재현
   1. `fetch_gripper_model.sh` — RealManRobot 공식 저장소(`URDF-to-XACRO`)에서 EG2-4C2 그리퍼 모델(mesh/urdf)을 가져옴
   2. `build_arm_gripper_urdf.sh` — 팔(`rm_75.urdf.xacro`)과 그리퍼(`jaw.urdf.xacro`)를 `arm_jaw_joint`(고정 조인트)로 결합한 `arm_gripper.urdf.xacro` 생성
      - `arm_jaw_joint`로 팔 끝(`Link7`)과 그리퍼 베이스(`4C2_baselink`) 연결, 실측 보정값(z=-0.009, rpy z=-1.57) 적용
      - 손끝 기준점 `grasp_tcp`(Link7 기준 z+0.12) 추가
   3. `display_rm75_jaw.sh` — robot_state_publisher + joint_state_publisher_gui + rviz2 launch 파일 생성/실행
-- `display_rm75_jaw_checklist.md` 기준으로 RViz 결합 결과 검증: 팔+그리퍼 표시, 관절 8개(joint1~7 + jaw_Joint1) 확인, `jaw_Joint1` 슬라이더로 그리퍼 개폐, TF에서 `grasp_tcp` 프레임 위치 확인
+- `display_rm75_jaw_checklist.md` 기준으로 RViz 결합 결과 검증: 팔+그리퍼 표시, 관절 8개(joint1~7 + jaw_Joint1) 확인, `jaw_Joint1` 슬라이더로 그리퍼 개폐, TF에서 `grasp_tcp` 프레임 위치 확인 (`frames_2026-08-05_13.32.54.pdf`로 당시 TF 트리 스냅샷 저장)
 - MoveIt 마커·예제 코드 분석(`마커관찰.md`, `예제해부.md`): 인터랙티브 마커의 공(위치)/고리(자세) 차이, plan 성공 확인 없이 execute를 호출하면 안 되는 이유, 쿼터니언 기반 orientation 재사용 패턴 정리
 - 나만의 파지 시퀀스 설계(`나만의시퀀스설계.md`): 홈 → P 위 접근 → P로 하강 → 복귀 4단계로 목표 지정 방법·성공 확인·실패 시 대응을 미리 설계
 - effort 필드 관찰 도전 미션(`effort필드관찰.md`): demo 모드의 effort 값(0/미채움) 확인, 실기체에서는 관절 토크 추정치가 다르게 나타날 것이라는 예측 정리
+- 그리퍼 단독 명령 정리(`그리퍼명령.md`): `set_gripper_position_cmd`(위치 제어, 0~1000)와 `set_gripper_pick_on_cmd`(힘 제어, speed/force 지정) 두 토픽의 차이를 정리 — 위치 제어로 닫으면 물체에 막혔을 때 과부하 보호로 힘을 안 놓아 이송 중 미끄러지므로, 실제 파지에는 지정한 힘을 계속 유지하는 `pick_on`을 써야 한다는 이유까지 확인. 그리퍼 개방도는 ROS 토픽으로는 못 읽고 웹 UI에서만 확인 가능하다는 제약도 기록
+- 픽앤플레이스 시뮬레이션 스크립트 2종 작성(`pick_place.py`, `grasp_test.py`) — MoveIt의 `MoveGroup`/`ExecuteTrajectory` 액션과 `ApplyPlanningScene`/`GetCartesianPath` 서비스를 직접 호출하는 방식
+  - `pick_place.py`: 박스 1개를 고정 좌표로 pick→place. **닫기 전에 attach, 열고 살짝 후퇴한 뒤에 detach**해야 한다는 순서 규칙을 코드에 못박음(반대로 하면 그리퍼 여닫기가 충돌 판정으로 실패)
+  - `grasp_test.py`: CLI 인자(`--shape box/cylinder/sphere`, `--pos`, `--radius`/`--height`/`--size`, `--grasp-dir top/front` 등)로 임의 물체를 잡아보는 범용 검증 하네스로 확장 — 물체 폭에서 그리퍼 닫힘값을 역산하는 `closed_value_for_width()`, 위/측면 두 파지 방향(top=위에서 하강, front=측면 감싸쥐기) 지원
+- RealSense + YOLO 비전 파이프라인 검증 스크립트 3종 (`vision_to_base_test.py`, `vision_approach_test.py`, `vision_grasp_test.py`) — "05 테스트" 시리즈로 카메라 좌표 → 로봇 제어까지 단계적으로 검증
+  - `vision_to_base_test.py`(A단계, v3): YOLOv8로 물체(bottle) 검출 → bbox 중앙 ROI의 median 깊이로 카메라 좌표 계산 → `camera_color_optical_frame → base_link` TF로 변환. v1 대비 (1) TF를 별도 스레드에서 계속 spin해 200Hz 스트림 버퍼 밀림 방지 (2) TF 나이(`MAX_TF_AGE`) 검사로 오래된 변환 거부 (3) 팔이 완전히 멈춘 뒤에만 "READY"로 측정 확정 (4) 깊이 센서가 주는 표면점을 원통 반지름만큼 시선 방향으로 밀어 중심축으로 보정(`RADIUS_COMPENSATION`) 하는 네 가지를 개선 — 여러 자세에서 같은 물체를 반복 측정해 평균/산포/오차(mm 단위)까지 계산
+  - `vision_approach_test.py`(B단계): A단계 좌표 파이프라인으로 물병 위치를 구하고, `MoveJ_P`로 물병 앞 `APPROACH_BACK`만큼 떨어진 지점까지 접근만 수행(파지는 안 함). `GRASP_OFFSET`(0.098m)은 드래그 티칭으로 직접 물병을 감싼 뒤 `tf2_echo`로 역산한 실측값. MoveIt을 거치지 않아 충돌 검사가 없으므로 X/Y/Z 허용 범위·최대 이동량(`MAX_STEP`)을 코드 안에서 직접 점검해 범위를 벗어나면 발행 자체를 거부하는 안전장치를 넣음
+  - `vision_grasp_test.py`: B단계를 확장해 실제 파지까지 이어갈 목적으로 만든 파일이지만, 현재는 `vision_approach_test.py`와 내용이 동일함(diff 없음) — 다음 단계(그리퍼 닫기·들어올리기 추가)가 아직 반영 전인 진행 중 상태
 - 실기체 체험 기록(`실습기록.md`): 위치 제어 상태에서 밀어보기(충돌 보호 작동 확인), 직접 교시(부드럽게 따라오고 손 놓으면 그 자리 유지), 교시 자세 재생까지 실물 로봇으로 체험
 
 ## Week 4 — Go2 사족보행 + Gazebo 실습
